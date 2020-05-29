@@ -1,0 +1,21 @@
+[Unit]
+Description=DNS seeder for the Zcash network
+Before=systemd-resolved
+
+[Service]
+Type=simple
+ExecStart=/etc/dnsseeder/coredns -conf /etc/dnsseeder/Corefile
+ExecReload=/bin/kill -HUP ${MAINPID}
+KillSignal=SIGINT
+TimeoutSec=60
+Restart=on-failure
+
+DynamicUser=yes
+ProtectHome=yes
+ProtectSystem=strict
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+# Bootstrap from mainnet.z.cash
+mainnet.seeder.yolo.money {
+    dnsseed {
+        network mainnet
+        bootstrap_peers 104.236.180.231:8233
+        crawl_interval 30m
+        record_ttl 600
+    }
+}
+
+# Bootstrap from testnet.z.cash
+testnet.seeder.yolo.money {
+    dnsseed {
+        network testnet
+        bootstrap_peers 198.199.112.230:18233
+        crawl_interval 15m
+        record_ttl 300
+    }
+}
+
+# Returns 200 OK on :8080/health
+. {
+    health :8080
+}
