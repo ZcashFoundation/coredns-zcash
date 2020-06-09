@@ -22,15 +22,20 @@ RUN echo "replace github.com/btcsuite/btcd => github.com/gtank/btcd v0.0.0-20191
 RUN make all \
 	&& mv coredns /usr/bin/coredns
 
+
 FROM alpine:latest
+
+RUN apk --no-cache add libcap
 
 COPY --from=builder /usr/bin/coredns /usr/bin/coredns
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
 
 COPY coredns/Corefile /etc/dnsseeder/Corefile
 
-# DNS will bind to 8053
-EXPOSE 8053
+RUN setcap 'cap_net_bind_service=+ep' /usr/bin/coredns
+
+# DNS will bind to 53
+EXPOSE 53
 
 # Global health check will respond 200 OK on 8080
 EXPOSE 8080
@@ -41,4 +46,4 @@ RUN adduser --disabled-password dnsseeder
 USER dnsseeder
 
 ENTRYPOINT [ "coredns" ]
-CMD [ "-conf", "/etc/dnsseeder/Corefile", "-dns.port", "8053"]
+CMD [ "-conf", "/etc/dnsseeder/Corefile"]
