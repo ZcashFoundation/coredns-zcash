@@ -1,7 +1,7 @@
 .PHONY: docker docker-run docker-clean install uninstall all clean
 
 BUILD_DIR=build_output
-VERSION=v0.1.1-rc1
+VERSION=v0.1.1
 
 all: coredns-zcash_${VERSION}.tgz
 
