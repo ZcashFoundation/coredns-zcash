@@ -1,19 +1,24 @@
 .PHONY: docker docker-run docker-clean install uninstall all clean
 
-VERSION=v0.1.1
+BUILD_DIR=build_output
+VERSION=v0.1.1-rc1
 
-all: build_output/coredns
+all: coredns-zcash_${VERSION}.tgz
+
+coredns-zcash_${VERSION}.tgz: ${BUILD_DIR}/coredns
+	tar czf coredns-zcash_${VERSION}.tgz ${BUILD_DIR}/ scripts/ coredns/ systemd/
 
 clean:
-	rm -rf build_output
+	rm -rf ${BUILD_DIR}
+	rm coredns-zcash_${VERSION}.tgz
 
-build_output:
-	mkdir build_output
+${BUILD_DIR}:
+	mkdir -p ${BUILD_DIR}
 
-build_output/coredns: build_output
+${BUILD_DIR}/coredns: ${BUILD_DIR}
 	bash scripts/build.sh
 
-install: build_output/coredns
+install: ${BUILD_DIR}/coredns
 	bash scripts/install_systemd.sh
 
 uninstall:
