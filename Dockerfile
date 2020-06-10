@@ -37,9 +37,6 @@ RUN setcap 'cap_net_bind_service=+ep' /usr/bin/coredns
 # DNS will bind to 53
 EXPOSE 53
 
-# Global health check will respond 200 OK on 8080
-EXPOSE 8080
-
 VOLUME /etc/dnsseeder
 
 RUN adduser --disabled-password dnsseeder

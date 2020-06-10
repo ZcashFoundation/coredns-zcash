@@ -17,8 +17,3 @@ testnet.seeder.yolo.money {
         record_ttl 300
     }
 }
-
-# Returns 200 OK on :8080/health
-. {
-    health :8080
-}
