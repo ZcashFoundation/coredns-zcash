@@ -4,7 +4,10 @@
 set -uxeo pipefail
 
 mkdir /etc/dnsseeder
-mkdir /etc/systemd/resolved.conf.d/
+
+if [ ! -d /etc/systemd/resolved.conf.d ]; then
+    mkdir /etc/systemd/resolved.conf.d
+fi
 
 cp build_output/coredns /etc/dnsseeder/coredns
 cp coredns/Corefile /etc/dnsseeder/Corefile
