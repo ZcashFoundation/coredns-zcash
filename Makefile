@@ -19,7 +19,7 @@ ${BUILD_DIR}/coredns: ${BUILD_DIR}
 	bash scripts/build.sh
 
 install: ${BUILD_DIR}/coredns
-	bash scripts/install_systemd.sh
+	bash scripts/install_systemd.sh example.com
 
 uninstall:
 	bash scripts/uninstall_systemd.sh

@@ -20,11 +20,11 @@ TODO
 
 ### Deploying from binary to a generic systemd Linux
 
-Check the releases page for a tarball. Extract the contents anywhere, change to that directory, then run `sudo make install`.
+Check the releases page for a tarball. Extract the contents anywhere, change to that directory, then run `sudo make install`. Then edit `/etc/dnsseeder/Corefile` to replace instances of "example.com" with your desired DNS names.
 
 ### Deploying from source to a generic systemd Linux
 
-Clone this repo to the machine you want to deploy to, which will need to have a working Go build environment. Then run `sudo make install` and you're good to go. If you'd prefer not to do that, the only part of the build and install process that actually *needs* elevated permissions is linking the systemd configuration.
+Clone this repo to the machine you want to deploy to, which will need to have a working Go build environment. Then run `sudo make install`, edit `/etc/dnsseeder/Corefile` with your DNS names, and you're good to go. If you'd prefer not to do that, the only part of the build and install process that actually *needs* elevated permissions is linking the systemd configuration.
 
 Further down the rabbit hole, you can look at what `scripts/build.sh` and `scripts/install_systemd.sh` do and then do that manually instead. It's Go, so you can pretty much just `scp` the coredns binary and Corefile to wherever you want.
 
