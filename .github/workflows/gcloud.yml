@@ -21,7 +21,7 @@ jobs:
       run: |
         BRANCH_NAME=$GITHUB_REPOSITORY/$(expr $GITHUB_REF : '.*/\(.*\)') && \
         BRANCH_NAME=${BRANCH_NAME,,} && \
-        SHA7=${git rev-parse --short=7 $GITHUB_SHA} && \
+        SHA7=$(git rev-parse --short=7 $GITHUB_SHA) && \
         echo '::set-env name=BRANCH_NAME::$BRANCH_NAME' && \
         echo '::set-env name=SHA7::$SHA7'
 
