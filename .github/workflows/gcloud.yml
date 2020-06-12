@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - gcloud-workflow
 
 env:
   PROJECT_ID: ecosystem-infrastructure
