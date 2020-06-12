@@ -42,7 +42,7 @@ jobs:
     # Deploy image to Compute Engine
     - name: Deploy
       run: |
-        gcloud compute instances create-with-container zfnd-seeder-$SHA7 \
-          --zone=$GCLOUD_ZONE \
-          --container-image $PROJECT_ID/$BRANCH_NAME:$SHA7 \
-          --metadata-from-file=startup-script=scripts/gcp-start.sh \
+        gcloud compute instances create-with-container "zfnd-seeder-$SHA7" \
+          --zone "$GCLOUD_ZONE" \
+          --container-image "$PROJECT_ID/$BRANCH_NAME:$SHA7" \
+          --metadata-from-file startup-script=scripts/gcp-start.sh
