@@ -8,6 +8,7 @@ on:
 
 env:
   PROJECT_ID: ecosystem-infrastructure
+  GCLOUD_ZONE: us-central1-a
 
 jobs:
   build-deploy:
@@ -21,8 +22,8 @@ jobs:
       run: |
         BRANCH_NAME=$GITHUB_REPOSITORY/$(expr $GITHUB_REF : '.*/\(.*\)') && \
         BRANCH_NAME=${BRANCH_NAME,,} && \
-        echo '::set-env name=BRANCH_NAME::'$BRANCH_NAME && \
-        echo '::set-env name=SHA7::'$(git rev-parse --short=7 $GITHUB_SHA)
+        echo "::set-env name=BRANCH_NAME::$BRANCH_NAME" && \
+        echo "::set-env name=SHA7::$(git rev-parse --short=7 $GITHUB_SHA)"
 
     # Setup gcloud CLI
     - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
@@ -42,5 +43,6 @@ jobs:
     - name: Deploy
       run: |
         gcloud compute instances create-with-container zfnd-seeder-$SHA7 \
+          --zone=$GCLOUD_ZONE \
           --container-image $PROJECT_ID/$BRANCH_NAME:$SHA7 \
-          --metadata-from-file=startup-script=scripts/gcp-start.sh
+          --metadata-from-file=startup-script=scripts/gcp-start.sh \
