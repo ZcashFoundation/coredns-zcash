@@ -47,4 +47,5 @@ jobs:
           --service-account instance-service-account@ecosystem-infrastructure.iam.gserviceaccount.com \
           --scopes cloud-platform \
           --container-image "gcr.io/$PROJECT_ID/$BRANCH_NAME:$SHA7" \
-          --metadata-from-file startup-script=scripts/gcp-start.sh
+          --metadata-from-file startup-script=scripts/gcp-start.sh \
+          --container-mount-host-path mount-path=/etc/dnsseeder,host-path=/etc/dnsseeder,mode=r
