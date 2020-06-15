@@ -49,5 +49,5 @@ jobs:
           --machine-type n1-highcpu-4 \
           --container-image "gcr.io/$PROJECT_ID/$BRANCH_NAME:$SHA7" \
           --tags seeder \
-          --metadata-from-file startup-script=scripts/seeder-zfnd-org-startup-script.sh \
+          --metadata-from-file startup-script=scripts/seeder-zfnd-org-startup.sh \
           --container-mount-host-path mount-path=/etc/dnsseeder,host-path=/etc/dnsseeder,mode=ro
