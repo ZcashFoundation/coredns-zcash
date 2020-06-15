@@ -46,6 +46,7 @@ jobs:
           --zone "$GCLOUD_ZONE" \
           --service-account instance-service-account@ecosystem-infrastructure.iam.gserviceaccount.com \
           --scopes cloud-platform \
+          --machine-type n1-highcpu-4 \
           --container-image "gcr.io/$PROJECT_ID/$BRANCH_NAME:$SHA7" \
           --tags seeder \
           --metadata-from-file startup-script=scripts/gcp-start.sh \
