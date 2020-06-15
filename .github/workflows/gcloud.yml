@@ -1,0 +1,52 @@
+name: gcloud
+
+on:
+  push:
+    branches:
+    - master
+
+env:
+  PROJECT_ID: ecosystem-infrastructure
+  GCLOUD_ZONE: us-central1-a
+
+jobs:
+  build-deploy:
+    name: Google Cloud Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Set project and image names
+      run: |
+        BRANCH_NAME=$GITHUB_REPOSITORY/$(expr $GITHUB_REF : '.*/\(.*\)') && \
+        BRANCH_NAME=${BRANCH_NAME,,} && \
+        echo "::set-env name=BRANCH_NAME::$BRANCH_NAME" && \
+        echo "::set-env name=SHA7::$(git rev-parse --short=7 $GITHUB_SHA)"
+
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '295.0.0'
+        project_id: ${{ env.PROJECT_ID }}
+        service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+
+    # Build and push image to Google Container Registry
+    - name: Build
+      # Tagging w/ the commit SHA blocks the :latest tag on GCR
+      run: |
+        gcloud builds submit \
+          --tag "gcr.io/$PROJECT_ID/$BRANCH_NAME:$SHA7"
+
+    # Deploy image to Compute Engine
+    - name: Deploy
+      run: |
+        gcloud compute instances create-with-container "zfnd-seeder-$SHA7" \
+          --zone "$GCLOUD_ZONE" \
+          --service-account instance-service-account@ecosystem-infrastructure.iam.gserviceaccount.com \
+          --scopes cloud-platform \
+          --machine-type n1-highcpu-4 \
+          --container-image "gcr.io/$PROJECT_ID/$BRANCH_NAME:$SHA7" \
+          --tags seeder \
+          --metadata-from-file startup-script=scripts/seeder-zfnd-org-startup.sh \
+          --container-mount-host-path mount-path=/etc/dnsseeder,host-path=/etc/dnsseeder,mode=ro
