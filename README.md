@@ -30,6 +30,13 @@ Further down the rabbit hole, you can look at what `scripts/build.sh` and `scrip
 
 To remove the seeder, run `scripts/uninstall_systemd.sh`.
 
+### Testing
+
+To see if your seeder instance is up and running, query it with something like
+```
+dig @my.seeder.ip mainnet.dnsseed.example.com
+```
+
 ## DNS configuration
 
 Let's say you want to configure seeders for the Zcash mainnet and testnet under the domain `dnsseed.example.com`. Then you would add an `NS` record for the subdomain `dnsseed` under your `example.com` configuration pointing to the address where you've deployed the seeder. The seeder will automatically respond to any subdomains as configured, so if your Corefile looks like [the default](coredns/Corefile) you'll end up with `mainnet.dnsseed.example.com` and `testnet.dnsseed.example.com`.
