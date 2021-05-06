@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.14.4-alpine as builder
 LABEL maintainer "George Tankersley <george@zfnd.org>"
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
@@ -16,7 +16,7 @@ RUN git clone --depth 1 --branch ${COREDNS_VERSION} https://github.com/coredns/c
 
 WORKDIR /go/src/github.com/coredns/coredns
 
-RUN go get github.com/zcashfoundation/dnsseeder/dnsseed
+# RUN go get github.com/zcashfoundation/dnsseeder/dnsseed
 
 RUN echo "dnsseed:github.com/zcashfoundation/dnsseeder/dnsseed" >> /go/src/github.com/coredns/coredns/plugin.cfg
 RUN echo "replace github.com/btcsuite/btcd => github.com/gtank/btcd v0.0.0-20191012142736-b43c61a68604" >> /go/src/github.com/coredns/coredns/go.mod
