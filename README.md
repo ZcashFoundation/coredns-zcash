@@ -1,6 +1,8 @@
 # Zcash DNS Seeder
 
-This repo contains scripts for building and deploying the Zcash Foundation's DNS seeder. There are several options for how to deploy a seeder of your own:
+This repo contains scripts for building and deploying the Zcash Foundation's DNS seeder. These scripts can deploy seeders for the Zcash mainnet, testnet, or regtest.
+
+There are several options for how to deploy a seeder of your own:
 
 ### Docker
 
@@ -40,3 +42,16 @@ dig @my.seeder.ip mainnet.dnsseed.example.com
 ## DNS configuration
 
 Let's say you want to configure seeders for the Zcash mainnet and testnet under the domain `dnsseed.example.com`. Then you would add an `NS` record for the subdomain `dnsseed` under your `example.com` configuration pointing to the address where you've deployed the seeder. The seeder will automatically respond to any subdomains as configured, so if your Corefile looks like [the default](coredns/Corefile) you'll end up with `mainnet.dnsseed.example.com` and `testnet.dnsseed.example.com`.
+
+## Non-Zcash Networks
+
+If you want to use the seeder on a non-Zcash network:
+1. Choose a unique magic value and port for your network
+2. Choose an initial network protocol version
+3. Set these values in the node implementation and seeder:
+  - https://github.com/ZcashFoundation/dnsseeder/blob/master/zcash/client.go#L35
+  - https://github.com/ZcashFoundation/dnsseeder/blob/master/zcash/network/params.go#L10
+  - https://github.com/ZcashFoundation/dnsseeder/blob/master/zcash/network/magic.go#L11
+
+If there are any changes in the message format of the seeder messages (`version`, `verack`, `ping`, `pong`, `getaddr`, `addr`), update the seeder with the new message formats.
+
