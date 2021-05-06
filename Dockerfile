@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.14.4-alpine as builder
 LABEL maintainer "George Tankersley <george@zfnd.org>"
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
