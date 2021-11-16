@@ -1,4 +1,4 @@
-FROM golang:1.14.4-alpine as builder
+FROM golang:1.17.3-alpine3.14 as builder
 LABEL maintainer "George Tankersley <george@zfnd.org>"
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
@@ -11,13 +11,18 @@ RUN apk --no-cache add \
 	make
 
 ENV COREDNS_VERSION v1.6.9
+# TODO: change to "main" or tagged version
+ENV DNSSEEDER_VERSION addrv2
 
 RUN git clone --depth 1 --branch ${COREDNS_VERSION} https://github.com/coredns/coredns /go/src/github.com/coredns/coredns
 
 WORKDIR /go/src/github.com/coredns/coredns
 
 RUN echo "dnsseed:github.com/zcashfoundation/dnsseeder/dnsseed" >> /go/src/github.com/coredns/coredns/plugin.cfg
-RUN echo "replace github.com/btcsuite/btcd => github.com/gtank/btcd v0.0.0-20191012142736-b43c61a68604" >> /go/src/github.com/coredns/coredns/go.mod
+# Branch "addrv2". TODO: change to "main-zfnd" or tagged version
+RUN echo "replace github.com/btcsuite/btcd => github.com/ZcashFoundation/btcd v0.22.0-beta.0.20211116150640-079ebf598ccb" >> /go/src/github.com/coredns/coredns/go.mod
+
+RUN go get github.com/zcashfoundation/dnsseeder/dnsseed@${DNSSEEDER_VERSION}
 
 RUN make all \
 	&& mv coredns /usr/bin/coredns
