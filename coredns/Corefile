@@ -10,7 +10,7 @@ mainnet.seeder.example.com {
 testnet.seeder.example.com {
     dnsseed {
         network testnet
-        bootstrap_peers testnet.z.cash:18233 testnet.is.yolo.money:18233 testnet.seeder.zfnd.org:18233
+        bootstrap_peers dnsseed.testnet.z.cash:18233 testnet.is.yolo.money:18233 testnet.seeder.zfnd.org:18233
         crawl_interval 15m
         record_ttl 300
     }
