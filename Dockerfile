@@ -11,7 +11,7 @@ RUN apk --no-cache add \
 	make
 
 ENV COREDNS_VERSION v1.6.9
-ENV DNSSEEDER_VERSION v0.2.2
+ENV DNSSEEDER_VERSION v0.2.3
 
 RUN git clone --depth 1 --branch ${COREDNS_VERSION} https://github.com/coredns/coredns /go/src/github.com/coredns/coredns
 
