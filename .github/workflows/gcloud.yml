@@ -27,7 +27,7 @@ jobs:
         echo "SHORT_SHA=$(git rev-parse --short=7 $GITHUB_SHA)" >> $GITHUB_ENV
 
     # Setup gcloud CLI
-    - uses: google-github-actions/setup-gcloud@v0
+    - uses: google-github-actions/setup-gcloud@v2
       with:
         version: '295.0.0'
         project_id: ${{ env.PROJECT_ID }}
