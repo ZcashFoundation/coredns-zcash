@@ -1,19 +1,23 @@
-FROM golang:1.17.3-alpine3.14 as builder
+ARG GO_VERSION=1.21.0
+ARG ALPINE_VERSION=3.18
+ARG COREDNS_VERSION=1.11.1
+ARG DNSSEEDER_VERSION=v0.2.4-beta
+
+FROM coredns/coredns:${COREDNS_VERSION} AS coredns
+
+FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
 LABEL maintainer "Zcash Foundation <engineers@zfnd.org>"
 
-ENV PATH /go/bin:/usr/local/go/bin:$PATH
-ENV GOPATH /go
-
 RUN apk --no-cache add \
-	bash \
 	ca-certificates \
+	libcap \
 	git \
 	make
 
-ENV COREDNS_VERSION v1.6.9
-ENV DNSSEEDER_VERSION v0.2.3
+ARG COREDNS_VERSION
+ARG DNSSEEDER_VERSION
 
-RUN git clone --depth 1 --branch ${COREDNS_VERSION} https://github.com/coredns/coredns /go/src/github.com/coredns/coredns
+RUN git clone --depth 1 --branch v${COREDNS_VERSION} https://github.com/coredns/coredns /go/src/github.com/coredns/coredns
 
 WORKDIR /go/src/github.com/coredns/coredns
 
@@ -23,28 +27,26 @@ RUN echo "replace github.com/btcsuite/btcd => github.com/ZcashFoundation/btcd v0
 
 RUN go get github.com/zcashfoundation/dnsseeder/dnsseed@${DNSSEEDER_VERSION}
 
-RUN make all \
-	&& mv coredns /usr/bin/coredns
+RUN make all && \
+	setcap cap_net_bind_service=+ep ./coredns
 
+FROM alpine:${ALPINE_VERSION} AS runner
 
-FROM alpine:latest
+RUN apk --no-cache add bind-tools
 
-RUN apk --no-cache add libcap
+USER nobody:nobody
 
-COPY --from=builder /usr/bin/coredns /usr/bin/coredns
-COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
+COPY --from=builder /go/src/github.com/coredns/coredns/coredns /usr/bin/coredns
+COPY --from=coredns /etc/ssl/certs /etc/ssl/certs
 
-COPY coredns/Corefile /etc/dnsseeder/Corefile
-
-RUN setcap 'cap_net_bind_service=+ep' /usr/bin/coredns
+COPY coredns/Corefile /etc/coredns/Corefile
 
 # DNS will bind to 53
-EXPOSE 53
+EXPOSE 53 53/udp
 
-VOLUME /etc/dnsseeder
+# Check if the Coredns container is healthy
+HEALTHCHECK --interval=5s --retries=10 CMD dig @0.0.0.0 mainnet.seeder.zfnd.org +dnssec >/dev/null
 
-RUN adduser --disabled-password dnsseeder
-USER dnsseeder
-
-ENTRYPOINT [ "coredns" ]
-CMD [ "-conf", "/etc/dnsseeder/Corefile"]
+# Start coredns with custom configuration file
+ENTRYPOINT ["coredns"]
+CMD ["-conf", "/etc/coredns/Corefile"]
