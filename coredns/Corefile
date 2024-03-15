@@ -5,7 +5,7 @@ mainnet.seeder.zfnd.org {
         crawl_interval 30m
         record_ttl 600
     }
-    // Add a log block to enable logging
+    # Add a log block to enable logging
     log {
         class denial error
     }
@@ -18,7 +18,7 @@ testnet.seeder.zfnd.org {
         crawl_interval 15m
         record_ttl 300
     }
-    // Add a log block to enable logging
+    # Add a log block to enable logging
     log {
         class denial error
     }
