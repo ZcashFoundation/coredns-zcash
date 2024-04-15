@@ -1,0 +1,112 @@
+name: Deploy to Cloud Run
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+      registry:
+        required: true
+        type: string
+      image_digest:
+        required: true
+        type: string
+        description: The image digest to deploy
+      project_id:
+        required: true
+        type: string
+        description: The project to deploy to
+      region:
+        required: true
+        type: string
+        description: The region to deploy to
+      environment:
+        required: false
+        type: string
+        description: The environment to deploy to
+      min_instances:
+        required: false
+        type: string
+        description: The minimum number of instances to deploy
+      max_instances:
+        required: false
+        type: string
+        description: The maximum number of instances to deploy
+      cpu:
+        required: false
+        type: string
+        description: The number of CPUs to use for the service
+      memory:
+        required: false
+        type: string
+        description: The amount of memory to use for the service
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set.outputs.version }}
+    steps:
+      - name: Getting API Version
+        id: get
+        uses: actions/github-script@v7
+        if: ${{ github.event_name == 'release' }}
+        with:
+          result-encoding: string
+          script: |
+            return context.payload.release.tag_name.substring(0,2)
+      - name: Setting API Version
+        id: set
+        run: echo "version=${{ steps.get.outputs.result }}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: [versioning]
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4.4.1
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2.1.2
+        with:
+          workload_identity_provider: '${{ vars.GCP_WIF }}'
+          service_account: '${{ vars.GCP_DEPLOYMENTS_SA }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2.1.0
+
+      - name: Deploy to cloud run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2.2.0
+        with:
+          service: ${{ inputs.app_name }}-${{ needs.versioning.outputs.version || env.GITHUB_HEAD_REF_SLUG || inputs.environment }}
+          image: ${{ inputs.registry }}/${{ inputs.app_name }}@${{ inputs.image_digest }}
+          region: ${{ inputs.region }}
+          gcloud_component: alpha
+          # env_vars: |
+          # secrets: |
+          flags: |
+            --min-instances=${{ inputs.min_instances }}
+            --max-instances=${{ inputs.max_instances }}
+            --cpu=${{ inputs.cpu }}
+            --memory=${{ inputs.memory }}
+            --network=projects/zfnd-dev-net-spoke-0/global/networks/dev-spoke-0
+            --subnet=projects/zfnd-dev-net-spoke-0/regions/us-east1/subnetworks/dev-default-ue1
+
+      - name: Allow unauthenticated calls to the service
+        run: |
+          gcloud run services add-iam-policy-binding ${{ inputs.app_name }}-${{ needs.versioning.outputs.version || env.GITHUB_HEAD_REF_SLUG || inputs.environment }} \
+          --region=${{ inputs.region }} --member=allUsers --role=roles/run.invoker --quiet
+
+      - name: Test service with cURL
+        run: curl "${{ steps.deploy.outputs.url }}"

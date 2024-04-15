@@ -1,0 +1,15 @@
+name: Lint Code Base
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - Corefile
+      - Dockerfile
+      - .github/workflows/ci-lint-codebase.yml
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Job not required"

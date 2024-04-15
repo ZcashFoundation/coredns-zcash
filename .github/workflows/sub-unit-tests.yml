@@ -1,0 +1,37 @@
+name: Unit Tests
+
+on:
+  workflow_call:
+
+concurrency:
+  # Ensures that only one workflow task will run at a time. Previous builds, if
+  # already in process, will get cancelled. Only the latest commit will be allowed
+  # to run, cancelling any workflows in between
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test with Go
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.x
+
+      - name: Install dependencies
+        run: |
+          echo "dnsseed:github.com/zcashfoundation/dnsseeder/dnsseed" >> plugin.cfg
+          echo "replace github.com/btcsuite/btcd => github.com/gtank/btcd v0.0.0-20191012142736-b43c61a68604" >> go.mod
+          go get github.com/zcashfoundation/dnsseeder/dnsseed@v0.2.4-beta
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test with the Go CLI
+        run: go test

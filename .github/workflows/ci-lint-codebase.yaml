@@ -1,0 +1,54 @@
+name: Lint Code Base
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.js*'
+      - '**.ts*'
+      - Dockerfile
+      - package.json
+      - pnpm-lock.yaml
+      - .github/workflows/ci-lint-codebase.yml
+
+  push:
+    branches: [main]
+    paths:
+      - Corefile
+      - Dockerfile
+      - .github/workflows/ci-lint-codebase.yml
+
+concurrency:
+  # Ensures that only one workflow task will run at a time. Previous builds, if
+  # already in process, will get cancelled. Only the latest commit will be allowed
+  # to run, cancelling any workflows in between
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4.1.1
+        with:
+          # Full git history is needed to get a proper
+          # list of changed files within `super-linter`
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: super-linter/super-linter/slim@v5.2.1
+        env:
+          LOG_LEVEL: ERROR
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_SHELL_SHFMT: false
+          VALIDATE_JSCPD: false
+          VALIDATE_CSS: false
+          VALIDATE_EDITORCONFIG: false
+          VALIDATE_MARKDOWN: false
+          VALIDATE_DOCKERFILE_HADOLINT: false
+          LINTER_RULES_PATH: /
+          JAVASCRIPT_DEFAULT_STYLE: prettier
+          TYPESCRIPT_DEFAULT_STYLE: prettier
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
