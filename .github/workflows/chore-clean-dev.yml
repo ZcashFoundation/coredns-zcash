@@ -1,0 +1,30 @@
+name: Clean dev instances
+
+on:
+  delete:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4.4.1
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2.1.2
+        with:
+          workload_identity_provider: '${{ vars.GCP_WIF }}'
+          service_account: '${{ vars.GCP_DEPLOYMENTS_SA }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1.1.1
+
+      - name: Removing CR service
+        run: |
+          gcloud run services delete ${{ vars.APP_NAME }}-${{ env.GITHUB_HEAD_REF_SLUG || env.GITHUB_REF_SLUG }} --region=${{ vars.GOOGLE_CLOUD_REGION }} --quiet

@@ -1,0 +1,48 @@
+name: Deploy to dev
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - Corefile
+      - Dockerfile
+      - .github/workflows/cd-deploy-to-dev.yml
+      - .github/workflows/sub-cloudrun-deploy.yml
+
+concurrency:
+  # Ensures that only one workflow task will run at a time. Previous builds, if
+  # already in process, will get cancelled. Only the latest commit will be allowed
+  # to run, cancelling any workflows in between
+  group: ${{ github.workflow }}-${{ github.job }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  # TODO: Add a job to run unit tests
+  # test:
+  #   uses: ./.github/workflows/sub-unit-tests.yml
+
+  build:
+    uses: ./.github/workflows/sub-build-docker-image.yml
+    with:
+      environment: dev
+      dockerfile_path: ./docker/Dockerfile
+      dockerfile_target: runner
+      app_name: ${{ vars.APP_NAME }}
+      registry: ${{ vars.GAR_BASE }}
+    secrets: inherit
+
+  deploy:
+    needs: [build]
+    uses: ./.github/workflows/sub-cloudrun-deploy.yml
+    with:
+      environment: dev
+      project_id: ${{ vars.GCP_PROJECT }}
+      region: ${{ vars.GCP_REGION }}
+      app_name: ${{ vars.APP_NAME }}
+      registry: ${{ vars.GAR_BASE }}
+      image_digest: ${{ needs.build.outputs.image_digest }}
+      min_instances: '0'
+      max_instances: '30'
+      cpu: '1'
+      memory: 1Gi
+    secrets: inherit
