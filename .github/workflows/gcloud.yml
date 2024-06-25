@@ -42,7 +42,7 @@ jobs:
     - name: Build
       # Tagging w/ the commit SHA blocks the :latest tag on GCR
       run: |
-        gcloud builds submit docker/Dockerfile \
+        gcloud builds submit ./docker \
           --tag "gcr.io/$PROJECT_ID/$BRANCH_NAME:$SHORT_SHA"
     # Deploy image to Compute Engine
     - name: Deploy
