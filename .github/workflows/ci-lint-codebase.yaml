@@ -14,8 +14,8 @@ on:
   push:
     branches: [main]
     paths:
-      - Corefile
-      - Dockerfile
+      - coredns/Corefile
+      - docker/Dockerfile
       - .github/workflows/ci-lint-codebase.yml
 
 concurrency:

@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - Corefile
-      - Dockerfile
+      - coredns/Corefile
+      - docker/Dockerfile
       - .github/workflows/cd-deploy-to-test.yml
       - .github/workflows/sub-cloudrun-deploy.yml
 

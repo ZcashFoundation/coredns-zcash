@@ -4,8 +4,8 @@ on:
   pull_request:
     branches: [main]
     paths-ignore:
-      - Corefile
-      - Dockerfile
+      - coredns/Corefile
+      - docker/Dockerfile
       - .github/workflows/ci-lint-codebase.yml
 
 jobs:

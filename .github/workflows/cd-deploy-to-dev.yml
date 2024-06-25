@@ -4,8 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     paths:
-      - Corefile
-      - Dockerfile
+      - coredns/Corefile
+      - docker/Dockerfile
       - .github/workflows/cd-deploy-to-dev.yml
       - .github/workflows/sub-cloudrun-deploy.yml
 
