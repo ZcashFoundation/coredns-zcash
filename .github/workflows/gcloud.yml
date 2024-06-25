@@ -34,7 +34,7 @@ jobs:
       uses: google-github-actions/auth@v2.1.2
       with:
         project_id: ${{ env.PROJECT_ID }}
-        service_account: '${{ secrets.GCLOUD_SA_KEY }}'
+        credentials_json: '${{ secrets.GCLOUD_SA_KEY }}'
 
     - uses: google-github-actions/setup-gcloud@v2.1.0
 
