@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "dnsseed:github.com/zcashfoundation/dnsseeder/dnsseed" >> plugin.cfg
           echo "replace github.com/btcsuite/btcd => github.com/gtank/btcd v0.0.0-20191012142736-b43c61a68604" >> go.mod
-          go get github.com/zcashfoundation/dnsseeder/dnsseed@v0.2.4-beta
+          go get github.com/zcashfoundation/dnsseeder/dnsseed@v0.2.4
 
       - name: Build
         run: go build -v ./...
