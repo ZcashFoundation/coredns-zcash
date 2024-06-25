@@ -22,7 +22,7 @@ RUN git clone --depth 1 --branch v${COREDNS_VERSION} https://github.com/coredns/
 WORKDIR /go/src/github.com/coredns/coredns
 
 RUN echo "dnsseed:github.com/zcashfoundation/dnsseeder/dnsseed" >> /go/src/github.com/coredns/coredns/plugin.cfg
-# Must be the same replace as in `dnsseeder`. Currently pointing to "main-zfnd" branch
+# Must be the same replace as in `dnsseeder`. Currently pointing to "master" branch
 RUN echo "replace github.com/btcsuite/btcd => github.com/ZcashFoundation/btcd v0.22.0-beta.0.20220607000607-40dc9492aa42" >> /go/src/github.com/coredns/coredns/go.mod
 
 RUN go get github.com/zcashfoundation/dnsseeder/dnsseed@${DNSSEEDER_VERSION}
