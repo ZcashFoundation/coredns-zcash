@@ -1,12 +1,18 @@
 version: 2
 updates:
-- package-ecosystem: github-actions
-  directory: "/"
-  schedule:
-    interval: daily
-    timezone: America/New_York
-  open-pull-requests-limit: 10
-  reviewers:
-  - conradoplg
-  assignees:
-  - conradoplg
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(actions) "
+    groups:
+      devops:
+        patterns:
+          - "*"
+  - package-ecosystem: docker
+    directory: /docker
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "deps(docker) "
