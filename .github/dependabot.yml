@@ -7,7 +7,16 @@ updates:
     commit-message:
       prefix: "deps(actions) "
     groups:
-      devops:
+      docker:
+        patterns:
+          - "docker*"
+      gcp:
+        patterns:
+          - "google-github-actions*"
+      linting:
+        patterns:
+          - "super-linter*"
+      others:
         patterns:
           - "*"
   - package-ecosystem: docker
