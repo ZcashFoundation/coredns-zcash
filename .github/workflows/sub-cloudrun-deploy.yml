@@ -77,7 +77,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         id: auth
-        uses: google-github-actions/auth@v2.1.2
+        uses: google-github-actions/auth@v2.1.3
         with:
           workload_identity_provider: '${{ vars.GCP_WIF }}'
           service_account: '${{ vars.GCP_DEPLOYMENTS_SA }}'
@@ -87,7 +87,7 @@ jobs:
 
       - name: Deploy to cloud run
         id: deploy
-        uses: google-github-actions/deploy-cloudrun@v2.2.0
+        uses: google-github-actions/deploy-cloudrun@v2.6.0
         with:
           service: ${{ inputs.app_name }}-${{ needs.versioning.outputs.version || env.GITHUB_HEAD_REF_SLUG || inputs.environment }}
           image: ${{ inputs.registry }}/${{ inputs.app_name }}@${{ inputs.image_digest }}
