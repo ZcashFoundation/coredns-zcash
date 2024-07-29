@@ -14,7 +14,7 @@ on:
         type: string
         description: The image digest to deploy
       project_id:
-        required: true
+        required: false
         type: string
         description: The project to deploy to
       region:
@@ -41,6 +41,8 @@ on:
         required: false
         type: string
         description: The amount of memory to use for the service
+
+permissions: read-all
 
 jobs:
   versioning:
@@ -75,19 +77,23 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4.5.0
 
+      - uses: actions/checkout@v4.1.7
+        with:
+          persist-credentials: false
+
       - name: Authenticate to Google Cloud
         id: auth
-        uses: google-github-actions/auth@v2.1.2
+        uses: google-github-actions/auth@v2.1.3
         with:
           workload_identity_provider: '${{ vars.GCP_WIF }}'
-          service_account: '${{ vars.GCP_DEPLOYMENTS_SA }}'
+          project_id: '${{ vars.GCP_PROJECT }}'
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2.1.0
 
       - name: Deploy to cloud run
         id: deploy
-        uses: google-github-actions/deploy-cloudrun@v2.2.0
+        uses: google-github-actions/deploy-cloudrun@v2.6.0
         with:
           service: ${{ inputs.app_name }}-${{ needs.versioning.outputs.version || env.GITHUB_HEAD_REF_SLUG || inputs.environment }}
           image: ${{ inputs.registry }}/${{ inputs.app_name }}@${{ inputs.image_digest }}
@@ -101,10 +107,11 @@ jobs:
             --cpu=${{ inputs.cpu }}
             --memory=${{ inputs.memory }}
             --port=53
-            --network=projects/zfnd-dev-net-spoke-0/global/networks/dev-spoke-0
-            --subnet=projects/zfnd-dev-net-spoke-0/regions/us-east1/subnetworks/dev-default-ue1
+            --network=${{ vars.GCP_NETWORK }}
+            --subnet=${{ vars.GCP_SUBNETWORK }}
 
       - name: Allow unauthenticated calls to the service
+        if: ${{ inputs.environment != 'prod' }}
         run: |
           gcloud run services add-iam-policy-binding ${{ inputs.app_name }}-${{ needs.versioning.outputs.version || env.GITHUB_HEAD_REF_SLUG || inputs.environment }} \
           --region=${{ inputs.region }} --member=allUsers --role=roles/run.invoker --quiet

@@ -3,10 +3,10 @@ name: Deploy to test
 on:
   push:
     branches:
-      - master
+      - main
     paths:
-      - coredns/Corefile
-      - docker/Dockerfile
+      - '**/Corefile'
+      - '**/Dockerfile'
       - .github/workflows/cd-deploy-to-test.yml
       - .github/workflows/sub-cloudrun-deploy.yml
 
@@ -16,6 +16,22 @@ concurrency:
   # to run, cancelling any workflows in between
   group: ${{ github.workflow }}-${{ github.job }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+
+permissions:
+  actions: read
+  attestations: read
+  checks: read
+  contents: read
+  deployments: read
+  id-token: write
+  issues: read
+  discussions: read
+  packages: read
+  pages: read
+  pull-requests: read
+  repository-projects: read
+  security-events: read
+  statuses: read
 
 jobs:
   # TODO: Add a job to run unit tests

@@ -12,12 +12,23 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.job }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  actions: read
+  attestations: read
+  checks: read
+  contents: read
+  deployments: read
+  id-token: write
+  issues: read
+  discussions: read
+  packages: read
+  pages: read
+  pull-requests: read
+  repository-projects: read
+  security-events: read
+  statuses: read
+
 jobs:
-  # TODO: Add a job to run unit tests
-  # test:
-  #   uses: ./.github/workflows/sub-unit-tests.yml
-
-
   build:
     # needs: [test]
     uses: ./.github/workflows/sub-build-docker-image.yml
@@ -40,7 +51,7 @@ jobs:
       registry: ${{ vars.GAR_BASE }}
       image_digest: ${{ needs.build.outputs.image_digest }}
       min_instances: '1'
-      max_instances: '100'
+      max_instances: '10'
       cpu: '1'
       memory: 1Gi
     secrets: inherit
