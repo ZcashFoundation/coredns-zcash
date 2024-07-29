@@ -3,8 +3,6 @@ name: Clean dev instances
 on:
   delete:
   pull_request:
-    branches:
-      - main
     types:
       - closed
 
