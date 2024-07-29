@@ -1,7 +1,18 @@
 version: 2
 updates:
+  - package-ecosystem: docker
+    directory: /docker
+    pull-request-branch-name:
+      separator: "-"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "deps(docker): "
+
   - package-ecosystem: github-actions
     directory: "/"
+    pull-request-branch-name:
+      separator: "-"
     schedule:
       interval: weekly
     commit-message:
@@ -13,15 +24,6 @@ updates:
       gcp:
         patterns:
           - "google-github-actions*"
-      linting:
-        patterns:
-          - "super-linter*"
       others:
         patterns:
           - "*"
-  - package-ecosystem: docker
-    directory: /docker
-    schedule:
-      interval: monthly
-    commit-message:
-      prefix: "deps(docker): "
