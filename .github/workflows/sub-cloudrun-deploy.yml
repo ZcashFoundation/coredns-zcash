@@ -77,23 +77,23 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4.5.0
 
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.0
         with:
           persist-credentials: false
 
       - name: Authenticate to Google Cloud
         id: auth
-        uses: google-github-actions/auth@v2.1.3
+        uses: google-github-actions/auth@v2.1.5
         with:
           workload_identity_provider: '${{ vars.GCP_WIF }}'
           project_id: '${{ vars.GCP_PROJECT }}'
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2.1.0
+        uses: google-github-actions/setup-gcloud@v2.1.1
 
       - name: Deploy to cloud run
         id: deploy
-        uses: google-github-actions/deploy-cloudrun@v2.6.0
+        uses: google-github-actions/deploy-cloudrun@v2.7.1
         with:
           service: ${{ inputs.app_name }}-${{ needs.versioning.outputs.version || env.GITHUB_HEAD_REF_SLUG || inputs.environment }}
           image: ${{ inputs.registry }}/${{ inputs.app_name }}@${{ inputs.image_digest }}
