@@ -14,7 +14,10 @@ mainnet.seeder.zfnd.org {
 testnet.seeder.zfnd.org {
     dnsseed {
         network testnet
-        bootstrap_peers dnsseed.testnet.z.cash:18233
+        # TODO: remove the IP, it's a ephemeral one from a ZF testnet node
+        # that was added to help the seeder bootstrap since the z.cash
+        # seeder is not returning good peers
+        bootstrap_peers dnsseed.testnet.z.cash:18233 35.243.162.248:18233
         crawl_interval 15m
         record_ttl 300
     }
