@@ -2,7 +2,7 @@ mainnet.seeder.zfnd.org {
     dnsseed {
         network mainnet
         bootstrap_peers dnsseed.z.cash:8233 dnsseed.str4d.xyz:8233
-        crawl_interval 30m
+        crawl_interval 15m
         record_ttl 600
     }
     # Add a log block to enable logging
