@@ -1,11 +1,14 @@
 mainnet.seeder.zfnd.org {
     dnsseed {
         network mainnet
-        bootstrap_peers dnsseed.z.cash:8233 dnsseed.str4d.xyz:8233
+        # Bootstrap peers:
+        # - DNS seeders (ECC, str4d)
+        # - ZF zebra nodes
+        # - Known good peer IPs
+        bootstrap_peers dnsseed.z.cash:8233 dnsseed.str4d.xyz:8233 34.138.164.8:8233 35.196.173.72:8233 34.73.119.93:8233 45.173.207.242:8233 18.27.125.103:8233
         crawl_interval 30m
         record_ttl 600
     }
-    # Add a log block to enable logging
     log {
         class denial error
     }
@@ -14,15 +17,14 @@ mainnet.seeder.zfnd.org {
 testnet.seeder.zfnd.org {
     dnsseed {
         network testnet
-        # TODO: remove the IPs, they were added to help the seeder bootstrap since the z.cash
-        # seeder is not returning good peers
-        # the first is a ephemeral one from a ZF testnet node
-        # the rest are the ones being currently returned by the seeder
-        bootstrap_peers dnsseed.testnet.z.cash:18233 35.243.162.248:18233 34.23.163.30:18233 104.196.101.173:18233 104.196.127.229:18233 161.97.247.6:18233 185.62.57.21:18233
+        # Bootstrap peers:
+        # - ZF zebra nodes
+        # - Known good peer IPs
+        # Note: dnsseed.testnet.z.cash not resolving
+        bootstrap_peers 34.23.160.180:18233 104.196.174.251:18233 34.74.225.177:18233 35.243.162.248:18233 34.23.163.30:18233
         crawl_interval 15m
         record_ttl 300
     }
-    # Add a log block to enable logging
     log {
         class denial error
     }

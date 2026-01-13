@@ -1,9 +1,12 @@
 #!/bin/bash
-# Sketch of a working deployment of the DNS seeder with systemd
+# Deployment of the DNS seeder with systemd
+#
+# Usage: sudo ./install_systemd.sh <domain>
+# Example: sudo ./install_systemd.sh seeder.zfnd.org
 
 set -uxeo pipefail
 
-mkdir /etc/dnsseeder
+mkdir -p /etc/dnsseeder
 
 if [ ! -d /etc/systemd/resolved.conf.d ]; then
     mkdir /etc/systemd/resolved.conf.d
@@ -28,9 +31,9 @@ cat coredns/Corefile >> /etc/dnsseeder/Corefile
 cp systemd/dnsseeder.service /etc/dnsseeder/
 cp systemd/10-resolved-override.conf /etc/dnsseeder/
 
-ln -s /etc/dnsseeder/dnsseeder.service /etc/systemd/system/
-ln -s /etc/dnsseeder/dnsseeder.service /etc/systemd/system/multi-user.target.wants/
-ln -s /etc/dnsseeder/10-resolved-override.conf /etc/systemd/resolved.conf.d/
+ln -sf /etc/dnsseeder/dnsseeder.service /etc/systemd/system/
+ln -sf /etc/dnsseeder/dnsseeder.service /etc/systemd/system/multi-user.target.wants/
+ln -sf /etc/dnsseeder/10-resolved-override.conf /etc/systemd/resolved.conf.d/
 
 systemctl daemon-reload
 systemctl stop systemd-resolved

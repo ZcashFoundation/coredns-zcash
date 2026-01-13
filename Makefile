@@ -25,7 +25,7 @@ uninstall:
 	bash scripts/uninstall_systemd.sh
 
 docker:
-	docker build -t zfnd-seeder:$(VERSION) -f Dockerfile .
+	docker build -t zfnd-seeder:$(VERSION) -f docker/Dockerfile .
 
 docker-run:
 	docker run -d --rm -p 1053:53/udp -p 1053:53/tcp -p 8080 zfnd-seeder:$(VERSION)

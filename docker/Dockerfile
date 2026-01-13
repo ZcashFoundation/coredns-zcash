@@ -6,7 +6,6 @@ ARG DNSSEEDER_VERSION=v0.4.0
 FROM coredns/coredns:${COREDNS_VERSION} AS coredns
 
 FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
-LABEL maintainer "Zcash Foundation <engineers@zfnd.org>"
 
 RUN apk --no-cache add \
 	ca-certificates \
@@ -32,21 +31,31 @@ RUN make all && \
 
 FROM alpine:${ALPINE_VERSION} AS runner
 
+LABEL maintainer="Zcash Foundation <engineers@zfnd.org>"
+LABEL org.opencontainers.image.source="https://github.com/ZcashFoundation/coredns-zcash"
+LABEL org.opencontainers.image.description="Zcash DNS Seeder - CoreDNS with dnsseed plugin"
+LABEL org.opencontainers.image.licenses="MIT"
+
 RUN apk --no-cache add bind-tools
 
-USER nobody:nobody
+# Configuration environment variables with ZFND defaults
+# Override these for custom deployments
+ENV HEALTHCHECK_DOMAIN="mainnet.seeder.zfnd.org"
 
 COPY --from=builder /go/src/github.com/coredns/coredns/coredns /usr/bin/coredns
 COPY --from=coredns /etc/ssl/certs /etc/ssl/certs
 
-COPY coredns/Corefile /etc/coredns/Corefile
+# Copy default ZFND Corefile - mount a volume to override
+COPY coredns/Corefile /etc/dnsseeder/Corefile
+
+USER nobody:nobody
 
 # DNS will bind to 53
 EXPOSE 53 53/udp
 
-# Check if the Coredns container is healthy
-HEALTHCHECK --interval=5s --retries=10 CMD dig @0.0.0.0 mainnet.seeder.zfnd.org +dnssec >/dev/null
+# Health check using configurable domain (shell form for variable expansion)
+HEALTHCHECK --interval=5s --retries=10 CMD dig @0.0.0.0 $HEALTHCHECK_DOMAIN +dnssec >/dev/null
 
-# Start coredns with custom configuration file
+# Start CoreDNS with configuration file
 ENTRYPOINT ["coredns"]
-CMD ["-conf", "/etc/coredns/Corefile"]
+CMD ["-conf", "/etc/dnsseeder/Corefile"]

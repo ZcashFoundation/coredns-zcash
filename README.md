@@ -1,57 +1,162 @@
 # Zcash DNS Seeder
 
-This repo contains scripts for building and deploying the Zcash Foundation's DNS seeder. These scripts can deploy seeders for the Zcash mainnet, testnet, or regtest.
+This repository contains the Zcash Foundation's DNS seeder, built on CoreDNS with a custom dnsseed plugin. The seeder helps new Zcash wallets and nodes discover peers on the network.
 
-There are several options for how to deploy a seeder of your own:
+**Default Configuration**: The container ships with ZFND defaults (`mainnet.seeder.zfnd.org` and `testnet.seeder.zfnd.org`). Most organizations can deploy as-is; others can customize the configuration.
+
+## Quick Start
+
+### Docker (Recommended)
+
+Build and run with ZFND defaults:
+
+```bash
+# Build
+make docker
+# or
+docker build -t zfnd-seeder:latest -f docker/Dockerfile .
+
+# Run (binds to port 1053 for testing)
+docker run --rm -p 1053:53/udp -p 1053:53/tcp zfnd-seeder:latest
+
+# Run in production (binds to port 53)
+docker run -d --network host zfnd-seeder:latest
+```
+
+### Custom Configuration
+
+To use your own domain, mount a custom Corefile:
+
+```bash
+docker run -d --network host \
+  -v /path/to/your/Corefile:/etc/dnsseeder/Corefile:ro \
+  -e HEALTHCHECK_DOMAIN="mainnet.seeder.example.com" \
+  zfnd-seeder:latest
+```
+
+## Deployment Options
 
 ### Docker
 
-To build the container, run either `make docker` or `docker build -t zfnd-seeder:latest -f Dockerfile .`.
+The container is stateless and can be safely restarted. Configuration is loaded from `/etc/dnsseeder/Corefile`.
 
-To run the container, use `make docker-run` or `docker run --rm -p 1053:53/udp -p 1053:53/tcp zfnd-seeder:latest`. That will bind the DNS listener to the host's port 1053. You could also use `--network host` if you want to bind to the host's port 53 directly. The seeder is stateless so it's fine to `--rm` the containers when they exit.
+**Environment Variables:**
 
-If you want to override the default Corefile (and you should because it won't work with your domain), mount a volume over `/etc/dnsseeder/Corefile`.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HEALTHCHECK_DOMAIN` | `mainnet.seeder.zfnd.org` | Domain used for container health checks |
 
 ### Google Compute Engine
 
-The container built here is designed to run on a GCP Container OS VM, but you'll need to use a start script to disable the systemd stub resolver and mount an appropriate configuration to `/etc/dnsseeder/Corefile`. An example is available in `scripts/gcp-start.sh`, which both stops the systemd resolver and drops the config file in an appropriate place for a host volume mount.
+For GCP Container OS VMs:
 
-### Debian package
+1. Use `scripts/gcp-start.sh` as the startup script
+2. The script stops systemd-resolved to free port 53
+3. The container uses its built-in Corefile with ZFND defaults
 
-TODO
+See `scripts/deploy-seeders.sh` for a multi-zone deployment example.
 
-### Deploying from binary to a generic systemd Linux
+To customize the Corefile, create `/etc/dnsseeder/Corefile` on the host and mount it into the container.
 
-Check the releases page for a tarball. Extract the contents anywhere, change to that directory, then run `sudo make install`. Then edit `/etc/dnsseeder/Corefile` to replace instances of "example.com" with your desired DNS names.
+### Systemd (Linux)
 
-### Deploying from source to a generic systemd Linux
+**From binary:**
 
-Clone this repo to the machine you want to deploy to, which will need to have a working Go build environment. Then run `sudo make install`, edit `/etc/dnsseeder/Corefile` with your DNS names, and you're good to go. If you'd prefer not to do that, the only part of the build and install process that actually *needs* elevated permissions is linking the systemd configuration.
+1. Download the release tarball from the releases page
+2. Extract and run `sudo make install`
+3. Edit `/etc/dnsseeder/Corefile` with your DNS names
+4. The seeder runs as a systemd service
 
-Further down the rabbit hole, you can look at what `scripts/build.sh` and `scripts/install_systemd.sh` do and then do that manually instead. It's Go, so you can pretty much just `scp` the coredns binary and Corefile to wherever you want.
+**From source:**
 
-To remove the seeder, run `scripts/uninstall_systemd.sh`.
+1. Clone this repo (requires Go build environment)
+2. Run `sudo make install`
+3. Edit `/etc/dnsseeder/Corefile` with your DNS names
 
-### Testing
+To uninstall: `sudo scripts/uninstall_systemd.sh`
 
-To see if your seeder instance is up and running, query it with something like
+## Configuration
+
+### Corefile
+
+The Corefile defines which domains the seeder responds to and how it discovers peers. Example:
+
 ```
-dig @my.seeder.ip mainnet.dnsseed.example.com
+mainnet.seeder.example.com {
+    dnsseed {
+        network mainnet
+        bootstrap_peers dnsseed.str4d.xyz:8233 34.138.164.8:8233
+        crawl_interval 30m
+        record_ttl 600
+    }
+    log {
+        class denial error
+    }
+}
+
+testnet.seeder.example.com {
+    dnsseed {
+        network testnet
+        bootstrap_peers 34.23.160.180:18233
+        crawl_interval 15m
+        record_ttl 300
+    }
+    log {
+        class denial error
+    }
+}
 ```
 
-## DNS configuration
+### DNS Setup
 
-Let's say you want to configure seeders for the Zcash mainnet and testnet under the domain `dnsseed.example.com`. Then you would add an `NS` record for the subdomain `dnsseed` under your `example.com` configuration pointing to the address where you've deployed the seeder. The seeder will automatically respond to any subdomains as configured, so if your Corefile looks like [the default](coredns/Corefile) you'll end up with `mainnet.dnsseed.example.com` and `testnet.dnsseed.example.com`.
+To configure seeders for `dnsseed.example.com`:
+
+1. Deploy the seeder to a server with a static IP
+2. Add an `NS` record for `dnsseed` subdomain pointing to your seeder's hostname
+3. Add an `A` record for the seeder hostname pointing to its IP
+
+The seeder responds to subdomains as configured in the Corefile (e.g., `mainnet.dnsseed.example.com`).
+
+## Testing
+
+Query your seeder to verify it's working:
+
+```bash
+# Test with a specific IP
+dig @<seeder-ip> mainnet.seeder.zfnd.org +short
+
+# Test ZFND production seeders
+dig mainnet.seeder.zfnd.org +short
+dig testnet.seeder.zfnd.org +short
+```
 
 ## Non-Zcash Networks
 
-If you want to use the seeder on a non-Zcash network:
+To use the seeder on a non-Zcash network:
+
 1. Choose a unique magic value and port for your network
 2. Choose an initial network protocol version
-3. Set these values in the node implementation and seeder:
-  - https://github.com/ZcashFoundation/dnsseeder/blob/master/zcash/client.go#L35
-  - https://github.com/ZcashFoundation/dnsseeder/blob/master/zcash/network/params.go#L10
-  - https://github.com/ZcashFoundation/dnsseeder/blob/master/zcash/network/magic.go#L11
+3. Fork and modify the [dnsseeder](https://github.com/ZcashFoundation/dnsseeder) plugin:
+   - `zcash/client.go` - Protocol settings
+   - `zcash/network/params.go` - Network parameters
+   - `zcash/network/magic.go` - Network magic bytes
 
-If there are any changes in the message format of the seeder messages (`version`, `verack`, `ping`, `pong`, `getaddr`, `addr`), update the seeder with the new message formats.
+If the message format differs from Zcash (`version`, `verack`, `ping`, `pong`, `getaddr`, `addr`), update the seeder accordingly.
 
+## Development
+
+```bash
+# Build locally
+make all
+
+# Build Docker image
+make docker
+
+# Run tests
+make docker-run
+dig @localhost -p 1053 mainnet.seeder.zfnd.org +short
+```
+
+## License
+
+MIT License - See LICENSE file for details.
