@@ -109,13 +109,89 @@ testnet.seeder.example.com {
 
 ### DNS Setup
 
-To configure seeders for `dnsseed.example.com`:
+A DNS seeder is itself a DNS nameserver - it responds to DNS queries with A records containing peer node IPs. This requires proper DNS delegation so queries reach your seeder.
 
-1. Deploy the seeder to a server with a static IP
-2. Add an `NS` record for `dnsseed` subdomain pointing to your seeder's hostname
-3. Add an `A` record for the seeder hostname pointing to its IP
+#### Architecture: Direct IPs, Not Proxies
 
-The seeder responds to subdomains as configured in the Corefile (e.g., `mainnet.dnsseed.example.com`).
+**Each seeder must have its own static external IP address.** Do not place seeders behind a load balancer or proxy:
+
+- **DNS seeders ARE nameservers** - they must receive DNS queries directly on port 53
+- **Proxies break DNS** - they would intercept/modify DNS responses, breaking the protocol
+- **DNS has built-in load balancing** - use multiple NS records for high availability
+- **Geographic distribution matters** - deploy seeders across regions to reduce latency
+
+For high availability, deploy multiple independent seeders and configure DNS round-robin (see below).
+
+#### Single Seeder Setup
+
+For a seeder at `seeder.example.com` with IP `203.0.113.10`:
+
+```dns
+; In your example.com DNS zone
+; Step 1: Create NS record to delegate the subdomain to your seeder
+seeder.example.com.        IN  NS  ns1.seeder.example.com.
+
+; Step 2: Create A record (glue record) for the nameserver itself
+ns1.seeder.example.com.    IN  A   203.0.113.10
+```
+
+The NS record delegates all queries for `*.seeder.example.com` to your seeder. Your Corefile would then define:
+
+```
+mainnet.seeder.example.com { ... }
+testnet.seeder.example.com { ... }
+```
+
+#### Multi-Seeder High Availability Setup (Recommended)
+
+For production deployments, run multiple seeders across different regions:
+
+```dns
+; In your example.com DNS zone
+; Multiple NS records for redundancy - DNS will round-robin between them
+seeder.example.com.        IN  NS  ns1.seeder.example.com.
+seeder.example.com.        IN  NS  ns2.seeder.example.com.
+seeder.example.com.        IN  NS  ns3.seeder.example.com.
+
+; Glue records - each nameserver has its own static IP
+ns1.seeder.example.com.    IN  A   203.0.113.10    ; US East
+ns2.seeder.example.com.    IN  A   203.0.113.20    ; US West
+ns3.seeder.example.com.    IN  A   198.51.100.30   ; Europe
+```
+
+**Key points:**
+- Each seeder runs the same container with the same Corefile
+- Each seeder independently crawls the network and maintains its own peer list
+- DNS resolvers will query different seeders, providing natural load distribution
+- If one seeder fails, DNS resolvers automatically use the others
+
+#### Verification
+
+After configuring DNS, verify the delegation:
+
+```bash
+# Check NS records are configured
+dig seeder.example.com NS +short
+# Should return: ns1.seeder.example.com., ns2.seeder.example.com., etc.
+
+# Query a seeder directly to verify it's responding
+dig @203.0.113.10 mainnet.seeder.example.com +short
+# Should return a list of Zcash peer IPs
+
+# Test end-to-end resolution
+dig mainnet.seeder.example.com +short
+# Should return peer IPs (may vary between queries due to round-robin)
+```
+
+#### DNS Provider Notes
+
+Most DNS providers support NS delegation. Common setups:
+
+- **Cloudflare**: Add NS records in the DNS dashboard; glue records are added automatically
+- **Route 53**: Create NS records in your hosted zone; add A records for glue
+- **Google Cloud DNS**: Same as Route 53
+
+Some providers call the A records for nameservers "glue records" - they're required when the nameserver hostname is within the delegated zone.
 
 ## Testing
 
