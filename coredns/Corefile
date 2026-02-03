@@ -3,9 +3,11 @@ mainnet.seeder.zfnd.org {
         network mainnet
         # Bootstrap peers:
         # - DNS seeders (ECC, str4d)
-        # - ZF zebra nodes
-        # - Known good peer IPs
-        bootstrap_peers dnsseed.z.cash:8233 dnsseed.str4d.xyz:8233 34.138.164.8:8233 35.196.173.72:8233 34.73.119.93:8233 45.173.207.242:8233 18.27.125.103:8233
+        # - ZF hosted nodes (zfnd-prod-zebra, zfnd-dev-zebra)
+        # - Known good external peer IPs
+        bootstrap_peers dnsseed.z.cash:8233 dnsseed.str4d.xyz:8233 34.138.164.8:8233 35.196.173.72:8233 34.73.119.93:8233 34.138.153.17:8233 104.196.205.12:8233 104.196.189.93:8233 18.27.125.103:8233
+        # ZF hosted IPs: 34.138.164.8, 35.196.173.72, 34.73.119.93 (prod)
+        #                34.138.153.17, 104.196.205.12, 104.196.189.93 (dev)
         crawl_interval 30m
         record_ttl 600
     }
@@ -17,11 +19,11 @@ mainnet.seeder.zfnd.org {
 testnet.seeder.zfnd.org {
     dnsseed {
         network testnet
-        # Bootstrap peers:
-        # - ZF zebra nodes
-        # - Known good peer IPs
-        # Note: dnsseed.testnet.z.cash not resolving
-        bootstrap_peers 34.23.160.180:18233 104.196.174.251:18233 34.74.225.177:18233 35.243.162.248:18233 34.23.163.30:18233
+        # Bootstrap peers (all ZF hosted):
+        # - zfnd-prod-zebra: 34.23.59.144, 34.74.116.126, 35.243.163.172
+        # - zfnd-dev-zebra:  34.23.166.185, 34.26.49.77, 35.185.63.162
+        # - zfnd-dev miner:  34.23.163.30
+        bootstrap_peers 34.23.59.144:18233 34.74.116.126:18233 35.243.163.172:18233 34.23.166.185:18233 34.26.49.77:18233 35.185.63.162:18233 34.23.163.30:18233
         crawl_interval 15m
         record_ttl 300
     }

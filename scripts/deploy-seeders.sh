@@ -25,8 +25,8 @@ IMAGE_PROJECT="cos-cloud"
 NETWORK_TAG="seeder"
 SERVICE_ACCOUNT="instance-service-account@ecosystem-infrastructure.iam.gserviceaccount.com"
 
-# Container image (same as existing VM)
-CONTAINER_IMAGE="us-docker.pkg.dev/zfnd-dev-services/ecosystem-services/dns-seeder@sha256:28496783855af5f6291519f70fec4958d280b00840bbbe487af38c1e7bd362af"
+# Container image from Docker Hub
+CONTAINER_IMAGE="docker.io/zfnd/dnsseeder:v1.1.0"
 
 # VM definitions: name|zone|region
 # Note: zfnd-seeder-1 (us-central1-a) already exists
